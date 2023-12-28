@@ -1,0 +1,19 @@
+<div class="card border-primary rounded custom-shadow">
+    {% if product.image %}
+        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+    {% else %}
+        <img src="{% static "img/Not found image.png" %}" alt="{{ product.name }}">
+    {% endif %}
+    <div class="card-body">
+        <a href="#">
+            <p class="card-title">{{ product.name }}</p>
+        </a>
+        <p class="card-text text-truncate">{{ product.description }}</p>
+        <p class="product_id">{{ product.display_id }}</p>
+        <div class="d-flex justify-content-between">
+            
+            <p><strong>{{ product.price }}</strong></p>
+            <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
+        </div>
+    </div>
+</div>

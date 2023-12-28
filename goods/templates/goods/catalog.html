@@ -1,0 +1,109 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% load goods_tags %}
+
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/product_cart.css' %}"/>
+{% endblock %}
+
+{% block content %} 
+<div class="row">
+  <div class="col-4">
+    <div id="list-example" class="list-group">
+      {% tag_categories as categories %}
+      {% for category in categories %}
+      <a class="list-group-item list-group-item-action" href="{% url "catalog:index" category.slug  %}">{{ category.name }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="col-8">
+    <button class="btn btn-secondary dropdoen-toggle btn-dark" type="button" data-bs-toggle="dropdown" aria-expanded="false">Фильтр</button>
+    <form action="{% if request.GET.q %}{% url "catalog:search" %}{% else %}{% url "catalog:index" slug_url %}{% endif %}" method="get" class="dropdown-menu bg-dark" data-bs-theme="dark">
+      <div class="form-check text-white mx-3">
+        <input class="form-check-input" type="checkbox" name="on_sale" value="on" id="flexCheckDefault" {% if request.GET.on_sale == 'on' %}checked{% endif %}>
+        
+        {% if request.GET.q %}<input type="hidden" name="q" value="request.GET.q">{% endif %}
+        <label class="form-check-label" for="flexCheckDefault">
+          Скидка
+        </label>
+      </div>
+      <p class="text-white mx-3 mt-3">Сортировать:</p>
+      <div class="form-check text-white mx-3">
+        <input class="form-check-input" type="radio" name="order_by" id="flexRadioDefault1" value="default" {% if request.GET.order_by == 'default' or not request.GET.order_by %}checked{% endif %}>
+        <label class="form-check-label" for="flexRadioDefault1">
+          По умолчанию
+        </label>
+      </div>
+      <div class="form-check text-white mx-3">
+        <input class="form-check-input" type="radio" name="order_by" id="flexRadioDefault2" value="price" {% if request.GET.order_by == 'price' %}checked{% endif %}>
+        <label class="form-check-label" for="flexRadioDefault2">
+          От дешевых к дорогим
+        </label>
+      </div>
+      <div class="form-check text-white mx-3">
+        <input class="form-check-input" type="radio" name="order_by" id="flexRadioDefault3" value="-price" {% if request.GET.order_by == '-price' %}checked{% endif %}>
+        <label class="form-check-label" for="flexRadioDefault3">
+          От дорогих к дешовым
+        </label>
+      </div>
+      <button type="submit" class="btn btn-primary mx-3 mt-3">Применить</button>
+    </form>
+
+    <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-smooth-scroll="true" class="scrollspy-example" tabindex="0">
+      <div class="row">
+        {% tag_products as goods %}
+        {% for product in goods %}
+          <h4 id="{{ category.slug }}">{{ category.name }}</h4>
+          <div class="col-lg-4 col-sm-6 mb-3">
+            <div class="card border-primary rounded custom-shadow">
+              {% if product.image %}
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+              {% else %}
+                <img src="{% static "img/Not found image.png" %}" alt="{{ product.name }}">
+              {% endif %}
+              <div class="card-body">
+                <a href="{% url "catalog:product" product.slug %}">
+                    <p class="card-title">{{ product.name }}</p>
+                </a>
+                <p class="card-text text-truncate">{{ product.description|truncatechars:30 }}</p>
+                <p class="product_id">{{ product.display_id }}</p>
+                <div class="d-flex justify-content-between">
+                    {% if product.discount %}
+                      <p><s>{{ product.price }} ₽</s></p>
+                      <p><strong>{{ product.sell_price }}</strong></p>
+                      <span class="badge bg-warning text-bg-dark">скидка {{ product.discount }} %</span>
+                    {% else %}
+                      <p><strong>{{ product.price }} ₽</strong></p>
+                    {% endif %}
+                    <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <nav aria-label="Page navigation example">
+      <ul class="pagination justify-content-center my-4">
+        <li class="page-item {% if not goods.has_previous %}disabled{% endif %}">
+          <a class="page-link" href="{% if goods.has_previous %}?{% change_params page=goods.previous_page_number %}{% else %}#{% endif %}">Назад</a>
+        </li>
+        {% for page in goods.paginator.page_range %}
+        {% if page >= goods.number|add:-3 and page <= goods.number|add:3 %}        
+          <li class="page-item {% if goods.number == page %}active{% endif %} ">
+            <a class="page-link" href="?{% change_params page=page %}">{{ page }}</a>
+          </li>
+        {% endif %}
+        {% endfor %}
+        <li class="page-item {% if not goods.has_next %}disabled{% endif %}">
+          <a class="page-link" href="{% if goods.has_next %}?{% change_params page=goods.next_page_number %}{% else %}#{% endif %}">Далее</a>
+        </li>
+      </ul>
+    </nav> 
+
+  </div>
+</div>
+{% endblock %}
